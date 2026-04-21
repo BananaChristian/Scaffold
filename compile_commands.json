@@ -1,0 +1,19 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "-std=c11",
+      "-g",
+      "-Wall",
+      "-Wextra",
+      "-Iinclude",
+      "-o",
+      "bin/scaff",
+      "src/main.c"
+    ],
+    "directory": "/home/banana/BANANA/Scaffold",
+    "file": "/home/banana/BANANA/Scaffold/src/main.c",
+    "output": "/home/banana/BANANA/Scaffold/bin/scaff"
+  }
+]
