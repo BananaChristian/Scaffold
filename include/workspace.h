@@ -20,8 +20,7 @@ typedef struct{
     const char *file_query; //The file the user asks for
     bool is_cache_valid;//Is the cached_paths valid
     
-    Mode current_mode;
-    Mode previous_mode;
+    Mode current_mode;//The current mode we are in 
 }Workspace;
 
 void ws_init(Workspace *ws);

@@ -1,4 +1,5 @@
 #include "renderer.h"
+#include "buffer.h"
 #include "raylib.h"
 #include "workspace.h"
 #include <stdlib.h>
@@ -8,8 +9,8 @@ void render_init(Renderer *render){
     render->focus=BUFFER_AREA;
     render->state.display_picker=false;
     
-    render->ui_font=LoadFontEx("assets/fonts/InterVariable.ttf", 24, 0, 250);
-    render->editor_font=LoadFontEx("assets/fonts/JetBrainsMono-Regular.ttf",32,0,250);
+    render->ui_font=LoadFont("assets/fonts/InterVariable.ttf"/*, 24, 0, 250 */);
+    render->editor_font=LoadFont("assets/fonts/JetBrainsMono-Regular.ttf"/*,32,0,250 */);
     
     render->bottom_bar.font=render->ui_font;
     render->file_picker.font=render->ui_font;
@@ -47,7 +48,7 @@ void render_calculate_layout(Renderer *render){
     render->buffer_area.width=render->screen_width;
     render->buffer_area.height=render->screen_height*0.90;    
     render->buffer_area.bg_color=render->bg_color;
-    render->buffer_area.font_size=render->screen_height*0.02;
+    render->buffer_area.font_size= 18;//render->screen_height*0.02;
     render->buffer_area.scroll_x=0;
     render->buffer_area.scroll_y=0;
     
@@ -69,7 +70,6 @@ void render_calculate_layout(Renderer *render){
     render->bottom_bar.width=render->screen_width;
     render->bottom_bar.height=render->screen_height*0.05;
     render->bottom_bar.font_size=render->bottom_bar.height*0.5;
-    
     render->bottom_bar.pos_x=0;
     render->bottom_bar.pos_y=render->screen_height-render->bottom_bar.height;
 }
@@ -181,7 +181,38 @@ void render_bottom_bar(Renderer *render,Workspace *ws){
     free((char *)mode_name);
 }
 
-
+void process_buffer_keys(Renderer *render, Workspace *ws){
+    if(IsKeyPressed(KEY_I)){
+        ws->current_mode=INSERT;
+        return;
+    }
+    
+    if(ws->current_mode==INSERT){
+        if(IsKeyPressed(KEY_ESCAPE)){
+            ws->current_mode=NORMAL;
+            return;
+        }
+        
+        int ch=GetCharPressed();
+        if(ch>=32 && ch <= 126){
+            buffer_insert_char(ws->active_buffer,(char)ch);
+            ws->needs_redraw=true;
+        }
+    }
+    
+    if(ws->current_mode==NORMAL){
+        if(IsKeyPressed(KEY_K)) 
+            buffer_move_cursor_up(ws->active_buffer);
+        if(IsKeyPressed(KEY_J))
+            buffer_move_cursor_down(ws->active_buffer);
+        if(IsKeyPressed(KEY_H))
+            buffer_move_cursor_left(ws->active_buffer);
+        if(IsKeyPressed(KEY_L))
+            buffer_move_cursor_right(ws->active_buffer);
+        
+        ws->needs_redraw=true;
+    }
+}
 
 void process_keys(Renderer *render,Workspace *ws){
     if (IsKeyPressed(KEY_P)) {

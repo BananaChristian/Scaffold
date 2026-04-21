@@ -14,7 +14,6 @@ void ws_init(Workspace *ws){
     ws->needs_redraw=true;
 
     ws->current_mode=NORMAL;
-    ws->previous_mode=NORMAL;
     ws->cached_paths=NULL;
     ws->cache_count=0;
     ws->file_query=NULL;

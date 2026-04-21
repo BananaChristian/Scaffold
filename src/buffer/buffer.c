@@ -40,6 +40,37 @@ void load_file(Buffer *buffer){
     fclose(file);
 }
 
+void buffer_insert_char(Buffer *buffer,char ch){
+    char *old_line=array_get(&buffer->lines,buffer->cursor.pos_y);
+    size_t old_len=strlen(old_line);
+    
+    size_t pos_x=buffer->cursor.pos_x;
+    char *new_line=malloc(old_len+2);
+    memcpy(new_line,old_line,pos_x);
+    new_line[pos_x]=ch;
+    memcpy(new_line+pos_x+1,old_line+pos_x,old_len-pos_x+1);
+    
+    array_set(&buffer->lines,buffer->cursor.pos_y,(char *)new_line);
+    free(old_line);
+    buffer->cursor.pos_x++;
+    buffer->dirty=true;
+}
+
+void buffer_delete_char(Buffer *buffer){
+    char *old_line=array_get(&buffer->lines,buffer->cursor.pos_y);
+    size_t old_len=strlen(old_line);
+    char *new_line=malloc(old_len);
+    size_t pos_x=buffer->cursor.pos_x;
+    memcpy(new_line,old_line,pos_x);
+    memcpy(new_line+pos_x,old_line+pos_x+1,old_len-pos_x);
+    
+    array_set(&buffer->lines,buffer->cursor.pos_y,new_line);
+    free(old_line);
+    
+    buffer->cursor.pos_y--;
+    buffer->dirty=true;
+}
+
 void destroy_buffer(Buffer *buffer){
     buffer->cursor.pos_x=0;
     buffer->cursor.pos_y=0;
@@ -49,4 +80,30 @@ void destroy_buffer(Buffer *buffer){
     buffer->filename=NULL;
     array_delete(&buffer->lines);
     free(buffer);
+}
+
+void buffer_move_cursor_up(Buffer *buffer){
+    if(buffer->cursor.pos_y==0){
+        buffer->cursor.pos_y=0;
+        return;
+    }
+    
+    buffer->cursor.pos_y--;
+}
+
+void buffer_move_cursor_down(Buffer *buffer){
+    buffer->cursor.pos_y++;
+}
+
+void buffer_move_cursor_left(Buffer *buffer){
+    if(buffer->cursor.pos_x==0){
+        buffer_move_cursor_up(buffer);
+        //I need to set the x position to the end of the last line
+        return;
+    }
+    buffer->cursor.pos_x--;
+}
+
+void buffer_move_cursor_right(Buffer *buffer){
+    buffer->cursor.pos_x++;
 }

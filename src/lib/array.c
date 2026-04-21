@@ -28,6 +28,13 @@ void *array_get(Array *array,size_t index){
     return array->data[index];
 }
 
+void array_set(Array *array,size_t index,void *value){
+    if(index>=array->size)
+        return;
+    
+    array->data[index]=value;
+}
+
 void array_append(Array *array,void *value){
     if(!array->isInitialized)
         array_init(array);

@@ -92,7 +92,10 @@ void render_buffer_area(Renderer *render,Workspace *ws);
 void render_filepicker(Renderer *render,Workspace *ws);
 void render_bottom_bar(Renderer *render,Workspace *ws);
 void render_calculate_layout(Renderer *render);
-void process_keys(Renderer *render,Workspace *ws);
 void render_draw(Renderer *render,Workspace *ws);
+
+void process_keys(Renderer *render,Workspace *ws);
+void process_filepicker_keys(Renderer *render,Workspace *ws);
+void process_buffer_keys(Renderer *render,Workspace *ws);
 
 #endif

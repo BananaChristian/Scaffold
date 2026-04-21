@@ -5,6 +5,7 @@
 int main(){
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_MSAA_4X_HINT);
     InitWindow(1200,600,"Scaff");
+    SetExitKey(KEY_NULL);
     SetTargetFPS(60);
     
     Workspace workspace;
