@@ -107,3 +107,5 @@ void buffer_move_cursor_left(Buffer *buffer){
 void buffer_move_cursor_right(Buffer *buffer){
     buffer->cursor.pos_x++;
 }
+
+

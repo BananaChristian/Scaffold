@@ -93,9 +93,12 @@ void render_filepicker(Renderer *render,Workspace *ws);
 void render_bottom_bar(Renderer *render,Workspace *ws);
 void render_calculate_layout(Renderer *render);
 void render_draw(Renderer *render,Workspace *ws);
+void render_cursor(Renderer *render,Workspace *ws,Buffer *buffer);
+void update_cursor_blink(Renderer *render,double delta_time);
 
+void render_switch_focus(Renderer *render,Workspace *ws);
 void process_keys(Renderer *render,Workspace *ws);
 void process_filepicker_keys(Renderer *render,Workspace *ws);
-void process_buffer_keys(Renderer *render,Workspace *ws);
+
 
 #endif

@@ -110,3 +110,36 @@ const char *mode_to_text(Workspace *ws){
     
     return mode_name;
 }
+
+void process_buffer_keys(Workspace *ws){
+    if(IsKeyPressed(KEY_I)){
+        ws->current_mode=INSERT;
+        return;
+    }
+    
+    if(ws->current_mode==INSERT){
+        if(IsKeyPressed(KEY_ESCAPE)){
+            ws->current_mode=NORMAL;
+            return;
+        }
+        
+        int ch=GetCharPressed();
+        if(ch>=32 && ch <= 126){
+            buffer_insert_char(ws->active_buffer,(char)ch);
+            ws->needs_redraw=true;
+        }
+    }
+    
+    if(ws->current_mode==NORMAL){
+        if(IsKeyPressed(KEY_K)) 
+            buffer_move_cursor_up(ws->active_buffer);
+        if(IsKeyPressed(KEY_J))
+            buffer_move_cursor_down(ws->active_buffer);
+        if(IsKeyPressed(KEY_H))
+            buffer_move_cursor_left(ws->active_buffer);
+        if(IsKeyPressed(KEY_L))
+            buffer_move_cursor_right(ws->active_buffer);
+        
+        ws->needs_redraw=true;
+    }
+}

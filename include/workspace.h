@@ -30,5 +30,6 @@ void ws_create_buffer(Workspace *ws,const char *filename);
 Buffer *ws_find_buffer(Workspace *ws,const char *filename);
 const char *mode_to_text(Workspace *ws);
 void ws_destroy(Workspace *ws);
+void process_buffer_keys(Workspace *ws);
 
 #endif

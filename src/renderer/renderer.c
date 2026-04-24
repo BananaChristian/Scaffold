@@ -47,6 +47,7 @@ void render_calculate_layout(Renderer *render){
     render->buffer_area.pos_y=render->status_bar.height;
     render->buffer_area.width=render->screen_width;
     render->buffer_area.height=render->screen_height*0.90;    
+    render->buffer_area.padding_left=20;
     render->buffer_area.bg_color=render->bg_color;
     render->buffer_area.font_size= 18;//render->screen_height*0.02;
     render->buffer_area.scroll_x=0;
@@ -75,6 +76,7 @@ void render_calculate_layout(Renderer *render){
 }
 
 void render_draw(Renderer *render,Workspace *ws){
+    update_cursor_blink(render,GetFrameTime());
     process_keys(render,ws);
     BeginDrawing();
     ClearBackground(render->bg_color);
@@ -107,6 +109,8 @@ void render_buffer_area(Renderer *render, Workspace *ws) {
         DrawText("SCAFFOLD",center_x, center_y, 40, WHITE);
         return;
     }
+
+    render_cursor(render,ws,buf);
     
     size_t start_y = render->status_bar.height;  // Starting Y position (below status bar)
     size_t line_height = 20;  // Space between lines
@@ -181,61 +185,67 @@ void render_bottom_bar(Renderer *render,Workspace *ws){
     free((char *)mode_name);
 }
 
-void process_buffer_keys(Renderer *render, Workspace *ws){
-    if(IsKeyPressed(KEY_I)){
-        ws->current_mode=INSERT;
-        return;
-    }
-    
-    if(ws->current_mode==INSERT){
-        if(IsKeyPressed(KEY_ESCAPE)){
-            ws->current_mode=NORMAL;
-            return;
-        }
-        
-        int ch=GetCharPressed();
-        if(ch>=32 && ch <= 126){
-            buffer_insert_char(ws->active_buffer,(char)ch);
-            ws->needs_redraw=true;
+void render_cursor(Renderer *render,Workspace *ws,Buffer *buffer){
+    size_t line_height=render->buffer_area.font_size+4;
+    size_t char_width=MeasureTextEx(render->editor_font,"W",render->buffer_area.font_size,1).x;
+    size_t cursor_x = render->buffer_area.padding_left + (buffer->cursor.pos_x * char_width);
+    size_t cursor_y = render->buffer_area.pos_y + (buffer->cursor.pos_y * line_height);
+    if(render->cursor_visible){
+        if(ws->current_mode==NORMAL){
+            DrawRectangleLines(cursor_x,cursor_y,char_width,line_height,render->cursor_color);
+        }else{
+            DrawRectangle(cursor_x,cursor_y,char_width,line_height,render->cursor_color);
         }
     }
-    
-    if(ws->current_mode==NORMAL){
-        if(IsKeyPressed(KEY_K)) 
-            buffer_move_cursor_up(ws->active_buffer);
-        if(IsKeyPressed(KEY_J))
-            buffer_move_cursor_down(ws->active_buffer);
-        if(IsKeyPressed(KEY_H))
-            buffer_move_cursor_left(ws->active_buffer);
-        if(IsKeyPressed(KEY_L))
-            buffer_move_cursor_right(ws->active_buffer);
+}
+
+void update_cursor_blink(Renderer *render,double delta_time){
+    render->cursor_blink_timer+=delta_time;
+    if(render->cursor_blink_timer>=0.5){
+        render->cursor_blink_timer=0;
+        render->cursor_visible=!render->cursor_visible;
+    }
+}
+
+void render_switch_focus(Renderer *render,Workspace *ws){
+    if (IsKeyPressed(KEY_P)) {
+        render->state.display_picker = !render->state.display_picker;
+       render->focus=render->state.display_picker? FILEPICKER:BUFFER_AREA; 
+       ws->needs_redraw=true;
+       return;
+    }
+}
+
+
+void process_filepicker_keys(Renderer *render,Workspace *ws){
+    if (IsKeyPressed(KEY_UP) && render->file_picker.selected_index > 0)
+            render->file_picker.selected_index--;
+    if (IsKeyPressed(KEY_DOWN) && render->file_picker.selected_index < ws->cache_count - 1)
+            render->file_picker.selected_index++;
         
+    if (IsKeyPressed(KEY_ENTER)) {
+            const char* path = ws->cached_paths[render->file_picker.selected_index];
+            ws_create_buffer(ws, path);
+
+            render->state.display_picker=false;
+            render->focus=BUFFER_AREA;
+            ws->needs_redraw = true;
+    }
+
+    if(IsKeyPressed(KEY_ESCAPE)){
+        render->state.display_picker=false;
+        render->focus=BUFFER_AREA;
         ws->needs_redraw=true;
     }
 }
 
 void process_keys(Renderer *render,Workspace *ws){
-    if (IsKeyPressed(KEY_P)) {
-        render->state.display_picker = !render->state.display_picker;
-        if(render->state.display_picker)
-            render->focus=FILEPICKER;
-        else 
-            render->focus=BUFFER_AREA;
-        ws->needs_redraw = true;
+    render_switch_focus(render,ws);
+    if(render->focus==BUFFER_AREA){
+        process_buffer_keys(ws);
+    }else if(render->focus==FILEPICKER){
+        process_filepicker_keys(render,ws);     
     }
-    if(render->focus==FILEPICKER){
-        if (IsKeyPressed(KEY_UP) && render->file_picker.selected_index > 0)
-            render->file_picker.selected_index--;
-        if (IsKeyPressed(KEY_DOWN) && render->file_picker.selected_index < ws->cache_count - 1)
-            render->file_picker.selected_index++;
-        
-        if (IsKeyPressed(KEY_ENTER)) {
-            const char* path = ws->cached_paths[render->file_picker.selected_index];
-            ws_create_buffer(ws, path);
-            ws->needs_redraw = true;
-        }
-    }
-    
 }
 
 
